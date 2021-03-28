@@ -20,7 +20,7 @@
       rel="stylesheet"
     />
     <!--Local CSS-->
-    <link rel="stylesheet" href="{% static "/css/styles.css" %}" />
+    <link rel="stylesheet" href="{% static '/css/styles.css' %}" />
     <!--FontAwsome-->
     <script
       src="https://kit.fontawesome.com/e51e1b526a.js"
@@ -70,9 +70,16 @@
         <div class="row">
           <div class="col-lg-6">
             <h1>Use security cameras of city to trace your vehicle.</h1>
-            <form name="search" onsubmit="return tracePath()" >
+            <form name="search" onsubmit="return tracePath()">
               <div class="form-floating mb-3 VehicleInput">
-                <input class="form-control" id="floatingInput" placeholder=" " pattern="[A-Z0-9]{6,10}" title="Must be 6-10 characters long" required/>
+                <input
+                  class="form-control"
+                  id="floatingInput"
+                  placeholder=" "
+                  pattern="[A-Z0-9]{6,10}"
+                  title="Must be 6-10 characters long"
+                  required
+                />
                 <label for="floatingInput">Enter your Vehicle Number</label>
               </div>
               <button type="submit" class="btn btn-info btn-lg">
@@ -81,7 +88,10 @@
             </form>
           </div>
           <div class="col-lg-6" id="homepageGraph">
-            <img src="{% static "/images/homepageGraph.png" %}" alt="Graph Image" />
+            <img
+              src="{% static '/images/homepageGraph.png' %}"
+              alt="Graph Image"
+            />
           </div>
         </div>
       </div>
@@ -175,60 +185,62 @@
       integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
       crossorigin="anonymous"
     ></script>
-    <script src="{% static "/js/index.js" %}" charset="utf-8"></script>
+    <script src="{% static '/js/index.js' %}" charset="utf-8"></script>
   </body>
   <div id="loading">
-    <img id="loading-image" src="{% static "/images/ajax-loader.gif" %}" alt="Loading..." class="center" />
+    <img
+      id="loading-image"
+      src="{% static '/images/ajax-loader.gif' %}"
+      alt="Loading..."
+      class="center"
+    />
   </div>
 </html>
 
-
 <script>
-
-  window.onload = function(){
-    $('#loading').hide();
+  window.onload = function () {
+    $("#loading").hide();
   };
 
   function tracePath() {
-
     var licensePlateNumber = document.getElementById("floatingInput").value;
-    var data = { 'licensePlateNumber' : licensePlateNumber } 
+    var data = { licensePlateNumber: licensePlateNumber };
 
     // adding data to javascript form which is to be send over ajax request
     var formData = new FormData();
-    formData.append('data', JSON.stringify(data));
+    formData.append("data", JSON.stringify(data));
 
-    $('#loading').show();
+    $("#loading").show();
     $.ajax({
-        type: 'POST',
-        url: '{% url "getVehiclePath" %}',
-        data: formData,
-        dataType: 'json',
-        enctype: 'multipart/form-data',
-        processData: false,
-        contentType: false,
-        success: function (data) {
-            $('#loading').hide();
-            window.setTimeout( function () {
-              document.getElementById('iframeWithGraph').scrollIntoView();
-            }, 3000 );
+      type: "POST",
+      url: '{% url "getVehiclePath" %}',
+      data: formData,
+      dataType: "json",
+      enctype: "multipart/form-data",
+      processData: false,
+      contentType: false,
+      success: function (data) {
+        $("#loading").hide();
+        window.setTimeout(function () {
+          document.getElementById("iframeWithGraph").scrollIntoView();
+        }, 3000);
 
-            // checking and handling error conditions
-            if (data.is_successful != '') {
+        // checking and handling error conditions
+        if (data.is_successful != "") {
+          pathToVisualize = [];
+          for (var i = 0; i < data.vehiclePath.length; i++) {
+            pathToVisualize.push(parseInt(data.vehiclePath[i][0]));
+          }
 
-              pathToVisualize = []
-              for (var i = 0;i < data.vehiclePath.length;i++) {
-                  pathToVisualize.push(parseInt(data.vehiclePath[i][0]));
-              }
-
-              var frames = window.frames;
-              frames[0].location.reload();
-              setTimeout(function(){window.parent.frames[0].vehiclePathFromParent(pathToVisualize)},4000);
-              
-            } else {
-                alert('Some unexpected error has occured. Try again.');
-            }
+          var frames = window.frames;
+          frames[0].location.reload();
+          setTimeout(function () {
+            window.parent.frames[0].vehiclePathFromParent(pathToVisualize);
+          }, 4000);
+        } else {
+          alert("Some unexpected error has occured. Try again.");
         }
+      },
     });
 
     return false;

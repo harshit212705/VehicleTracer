@@ -57,7 +57,6 @@ const edgesList = [
   [15, 16],
 ];
 
-
 // var visitedNodesList = document.getElementById('vehiclePath').innerHTML;
 // console.log(visitedNodesList);
 var visitedNodes = []; // MUST be passed IN ORDER of visit
@@ -233,9 +232,9 @@ function findEdges() {
   });
 }
 
-function callMeOnly_TrackPath() {
-  findEdges().then(updateGraph);
-}
+// function callMeOnly_TrackPath() {
+//   findEdges().then(updateGraph);
+// }
 
 /*************************************************
  *  This section is used to render the graph corectly on the screen.
@@ -257,12 +256,11 @@ $(window).resize(function () {
  * in end to fix the "missedEdges")
  */
 
-findEdges().then(markVisitedPath);
-
+// findEdges().then(markVisitedPath);
 
 function vehiclePathFromParent(vehiclePath) {
   visitedNodes = vehiclePath;
   // console.log(visitedNodes);
-  updateGraph();
+  // updateGraph();
   findEdges().then(markVisitedPath);
 }
