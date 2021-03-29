@@ -60,7 +60,9 @@ const edgesList = [
 // var visitedNodesList = document.getElementById('vehiclePath').innerHTML;
 // console.log(visitedNodesList);
 var visitedNodes = []; // MUST be passed IN ORDER of visit
-// const visitedNodes = [7, 11, 6, 7];
+
+var timeStamp = [];
+
 var visitedEdges = [];
 
 var missedEdges = [];
@@ -124,7 +126,7 @@ function createGraph() {
   edgesList.forEach(createEdge);
   return new Promise((myResolve) => {
     // myResolve();
-    setTimeout(myResolve, 5);
+    setTimeout(myResolve, 200);
   });
 }
 
@@ -133,15 +135,40 @@ function updateGraph() {
    * Graph must be created first.This function will
    * update graph positioning on events like screen-resize
    */
-
   nodesList.forEach(updateNodeCoordinate);
   edgesList.forEach(connectEdge);
   missedEdges.forEach(connectEdge);
-  if (visitedNodes.length > 0) {
-    updateToolTip(visitedNodes[0]);
-    updateToolTip(visitedNodes[visitedNodes.length - 1]);
+  if (visitedNodes) {
+    updateToolTip(visitedNodes[0], 0);
+    updateToolTip(
+      visitedNodes[visitedNodes.length - 1],
+      visitedNodes.length - 1
+    );
   }
+  visitedNodes.forEach((node, index) => {
+    updateToolTip(node, index, (onHover = true));
+  });
+
   $("body").html($("body").html());
+
+  visitedNodes.forEach((node, index) => {
+    $(`#C${node}`).hover(
+      () => {
+        console.log(`mouse in: ${node}`);
+        $(`.tooltip.tooltip-node-${node}.tooltip-time-${index}`).css(
+          "visibility",
+          "visible"
+        );
+      },
+      () => {
+        console.log(`mouse out: ${node}`);
+        $(`.tooltip.tooltip-node-${node}.tooltip-time-${index}`).css(
+          "visibility",
+          "hidden"
+        );
+      }
+    );
+  });
 }
 
 function createMissedEdge(edge) {
@@ -153,17 +180,44 @@ function createMissedEdge(edge) {
   }, 10);
 }
 
-function addToolTip(node, label) {
-  $("body").append(
-    `<div class="tooltip tooltip-node-${node}">
+function addToolTip(node, label, index, onHover = false) {
+  if (onHover) {
+    $("body").append(
+      `<div class="tooltip tooltip-node-${node} tooltip-time-${index}" style="visibility:hidden;">
       <span class="tooltiptext">${label}</span>
     </div>`
-  );
+    );
+  } else {
+    $("body").append(
+      `<div class="tooltip tooltip-node-${node}-${index}">
+      <span class="tooltiptext">${label}</span>
+    </div>`
+    );
+  }
 }
 
-function updateToolTip(node) {
+function updateToolTip(node, index, onHover = false) {
   let pos = $(`#C${node}`).offset();
-  $(`.tooltip-node-${node}`).offset({ top: pos.top - 20, left: pos.left });
+  let offX = 0,
+    offY = 0,
+    offset = 60,
+    temp = index * 4;
+  offY = Math.min(offset, temp);
+  if (temp > offset) {
+    offX = Math.floor(temp / offset) * 30;
+  }
+
+  if (onHover) {
+    $(`.tooltip-node-${node}.tooltip-time-${index}`).offset({
+      top: pos.top - offY,
+      left: pos.left + offX,
+    });
+  } else {
+    $(`.tooltip-node-${node}-${index}`).offset({
+      top: pos.top + offY,
+      left: pos.left + offX,
+    });
+  }
 }
 
 function markVisitedPath() {
@@ -173,6 +227,12 @@ function markVisitedPath() {
     // console.log(str);
     $(`#C${node} p`).text(str);
     $(`#C${node} p`).css({ "font-size": "0.8rem" });
+    addToolTip(
+      node,
+      `@Time:&nbsp;${0}+${timeStamp[index]}`,
+      (index = index),
+      (onHover = true)
+    );
   });
   visitedEdges.forEach((edge) => {
     let dir = edge[2];
@@ -185,10 +245,12 @@ function markVisitedPath() {
     }
   });
   missedEdges.forEach(createMissedEdge);
-  if (visitedNodes.length > 0) {
-    addToolTip(visitedNodes[0], "Start");
-    addToolTip(visitedNodes[visitedNodes.length - 1], "End");
-  }
+  addToolTip(visitedNodes[0], "Start", 0);
+  addToolTip(
+    visitedNodes[visitedNodes.length - 1],
+    "End",
+    visitedNodes.length - 1
+  );
   updateGraph();
 }
 
@@ -228,13 +290,9 @@ function findEdges() {
     }
   }
   return new Promise((myResolve) => {
-    setTimeout(myResolve, 3000);
+    setTimeout(myResolve, 2000);
   });
 }
-
-// function callMeOnly_TrackPath() {
-//   findEdges().then(updateGraph);
-// }
 
 /*************************************************
  *  This section is used to render the graph corectly on the screen.
