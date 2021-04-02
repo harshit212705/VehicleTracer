@@ -126,7 +126,8 @@ function createGraph() {
   edgesList.forEach(createEdge);
   return new Promise((myResolve) => {
     // myResolve();
-    setTimeout(myResolve, 200);
+    $("body").html($("body").html());
+    setTimeout(myResolve, 100);
   });
 }
 
@@ -200,8 +201,8 @@ function updateToolTip(node, index, onHover = false) {
   let pos = $(`#C${node}`).offset();
   let offX = 0,
     offY = 0,
-    offset = 60,
-    temp = index * 4;
+    offset = 100,
+    temp = index * 5;
   offY = Math.min(offset, temp);
   if (temp > offset) {
     offX = Math.floor(temp / offset) * 30;
@@ -229,7 +230,7 @@ function markVisitedPath() {
     $(`#C${node} p`).css({ "font-size": "0.8rem" });
     addToolTip(
       node,
-      `@Time:&nbsp;${0}+${timeStamp[index]}`,
+      `@Time:&nbsp;${timeStamp[index]}`,
       (index = index),
       (onHover = true)
     );
@@ -316,8 +317,9 @@ $(window).resize(function () {
 
 // findEdges().then(markVisitedPath);
 
-function vehiclePathFromParent(vehiclePath) {
+function vehiclePathFromParent(vehiclePath, timeStampNodes) {
   visitedNodes = vehiclePath;
+  timeStamp = timeStampNodes;
   // console.log(visitedNodes);
   // updateGraph();
   findEdges().then(markVisitedPath);

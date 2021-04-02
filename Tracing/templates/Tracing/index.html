@@ -223,20 +223,23 @@
         $("#loading").hide();
         window.setTimeout(function () {
           document.getElementById("iframeWithGraph").scrollIntoView();
-        }, 3000);
+        }, 500);
 
         // checking and handling error conditions
         if (data.is_successful != "") {
           pathToVisualize = [];
+          timestamp = [];
           for (var i = 0; i < data.vehiclePath.length; i++) {
             pathToVisualize.push(parseInt(data.vehiclePath[i][0]));
+            var date = new Date(data.vehiclePath[i][1]).toString();
+            timestamp.push(date.substr(0, date.length - 31));
           }
 
           var frames = window.frames;
           frames[0].location.reload();
           setTimeout(function () {
-            window.parent.frames[0].vehiclePathFromParent(pathToVisualize);
-          }, 4000);
+            window.parent.frames[0].vehiclePathFromParent(pathToVisualize, timestamp);
+          }, 2000);
         } else {
           alert("Some unexpected error has occured. Try again.");
         }
