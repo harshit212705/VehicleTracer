@@ -34,40 +34,62 @@ cityCamerasNetwork = [
     [9, 14, 15]
 ]
 
+bfs_traversal = []
+# nodeToTimeStampMapping = {}
 
-nodeToTimeStampMapping = {}
+# # function to set some base timestamp to each node
+# def set_base_time_with_each_camera_node():
+#     visited = [0]*(NUMBER_OF_CAMERAS+1)
+#     today = date.today()
+#     yesterday = today - timedelta(days = 1)
+#     baseTimeStamp = datetime(yesterday.year, yesterday.month, yesterday.day, 10, 0, 0)
 
-# function to set some base timestamp to each node
-def set_base_time_with_each_camera_node():
+#     startNode = 1
+#     nodeToTimeStampMapping[startNode] = str(baseTimeStamp)
+
+#     queue = []
+#     queue.append({startNode: baseTimeStamp})
+#     visited[startNode] = 1
+
+#     while len(queue) > 0:
+#         nodeDetails = queue.pop(0)
+#         node = list(nodeDetails.keys())[0]
+#         nodeTimeStamp = nodeDetails[node]
+        
+
+#         for i in range(len(cityCamerasNetwork[node])):
+#             if not visited[cityCamerasNetwork[node][i]]:
+#                 newTimeStamp = nodeTimeStamp + timedelta(minutes= 10)
+#                 nodeToTimeStampMapping[cityCamerasNetwork[node][i]] = str(newTimeStamp)
+#                 queue.append({cityCamerasNetwork[node][i]: newTimeStamp})
+#                 visited[cityCamerasNetwork[node][i]] = 1
+
+#     # print(nodeToTimeStampMapping)
+
+
+def bfs_of_camera_structure():
     visited = [0]*(NUMBER_OF_CAMERAS+1)
-    today = date.today()
-    yesterday = today - timedelta(days = 1)
-    baseTimeStamp = datetime(yesterday.year, yesterday.month, yesterday.day, 10, 0, 0)
-
     startNode = 1
-    nodeToTimeStampMapping[startNode] = str(baseTimeStamp)
-
+    
     queue = []
-    queue.append({startNode: baseTimeStamp})
+    queue.append(startNode)
     visited[startNode] = 1
 
     while len(queue) > 0:
-        nodeDetails = queue.pop(0)
-        node = list(nodeDetails.keys())[0]
-        nodeTimeStamp = nodeDetails[node]
-        
+        node = queue.pop(0)
+        bfs_traversal.append(node)
 
         for i in range(len(cityCamerasNetwork[node])):
             if not visited[cityCamerasNetwork[node][i]]:
-                newTimeStamp = nodeTimeStamp + timedelta(minutes= 10)
-                nodeToTimeStampMapping[cityCamerasNetwork[node][i]] = str(newTimeStamp)
-                queue.append({cityCamerasNetwork[node][i]: newTimeStamp})
+                queue.append(cityCamerasNetwork[node][i])
                 visited[cityCamerasNetwork[node][i]] = 1
+    
+    # print(bfs_traversal)
 
-    # print(nodeToTimeStampMapping)
 
 
-set_base_time_with_each_camera_node()
+# set_base_time_with_each_camera_node()
+bfs_of_camera_structure()
 findPlate = PlateFinder()
 
 
@@ -109,11 +131,17 @@ def getVehiclePath(request):
 
         # RESULT DICTIONARY WITH TIMESTAMPS
         vehiclePath = {}
+        today = date.today()
+        yesterday = today - timedelta(days = 1)
+        baseTimeStamp = datetime(yesterday.year, yesterday.month, yesterday.day, 10, 0, 0)
+
 
         # Iterating through all the camera nodes
-        for video_path in sorted(glob.glob(settings.BASE_DIR + '/cameraClips/*')):
+        # for video_path in sorted(glob.glob(settings.BASE_DIR + '/cameraClips/*')):
+        for video_name in bfs_traversal:
+            video_path = settings.BASE_DIR + '/cameraClips/' + str(video_name) + '.mp4' 
             print(video_path)
-            video_name = (video_path.split('.')[0]).split('/')[-1]
+            # video_name = (video_path.split('.')[0]).split('/')[-1]
 
             cap = cv2.VideoCapture(video_path)
             frames_count = 0
@@ -130,16 +158,6 @@ def getVehiclePath(request):
                                 
                                 # convert to grayscale and blur the image
                                 plate_gray = cv2.cvtColor(plate_rgb, cv2.COLOR_BGR2GRAY)
-                                
-                                rows, cols = plate_gray.shape
-
-                                for i in range(rows):
-                                    for j in range(cols):
-                                        if plate_gray[i, j] > 160:
-                                            plate_gray[i, j] = 255
-                                        else:
-                                            plate_gray[i, j] = 0
-
 
                                 predicted_number_plate_value = plate_with_dark_color_background(plate_rgb, plate_gray, model, labels)
                                 if predicted_number_plate_value == licensePlateNumber:
@@ -161,7 +179,11 @@ def getVehiclePath(request):
 
             if isMatchFound:
                 print('found', video_name)
-                vehiclePath[video_name] = nodeToTimeStampMapping[int(video_name)]
+                # vehiclePath[video_name] = nodeToTimeStampMapping[int(video_name)]
+                vehiclePath[video_name] = str(baseTimeStamp)
+                newTimeStamp = baseTimeStamp + timedelta(minutes= 10)
+                baseTimeStamp = newTimeStamp
+
             else:
                 print('not_found', video_name)
 
