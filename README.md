@@ -1,6 +1,11 @@
 # VehicleTracer
 An application to trace your vehicle path from security cameras of the city.
 
+Outcome:
+![Graph.gif](https://github.com/harshit212705/VehicleTracer/blob/master/graph.gif)
+
+(Note that the processing time has been cut down in this gif file to show the results faster. Original file will differ by having some processing time delay shown by a spinner. Execute locally to know more)
+
 
 ## Project Setup
 1. Clone the project directory.
